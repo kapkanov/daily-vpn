@@ -13,4 +13,8 @@ terraform:
 ansible:
 	@cd ansible \
 	&& ansible-playbook -i hosts main.yaml
-	
+
+.PHONY: clean
+clean:
+	@cd terraform \
+	&& terraform destroy
