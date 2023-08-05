@@ -1,0 +1,11 @@
+---
+- name: Setup wireguard
+  hosts: all
+  become: true
+
+  tasks:
+  - ansible.builtin.apt:
+      name: "wireguard"
+      state: present
+      update_cache: true
+      cache_valid_time: 7200

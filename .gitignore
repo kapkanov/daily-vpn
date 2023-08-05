@@ -1,4 +1,7 @@
 .envrc
+
 .terraform*
 *.tfstate*
 id_rsa
+
+hosts
