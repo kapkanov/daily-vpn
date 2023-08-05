@@ -4,8 +4,36 @@
   become: true
 
   tasks:
-  - ansible.builtin.apt:
+  - name: Install wireguard
+    ansible.builtin.apt:
       name: "wireguard"
       state: present
       update_cache: true
       cache_valid_time: 7200
+
+  - name: Generate private server key
+    ansible.builtin.shell:
+      chdir: /root
+      creates: /root/wg.key
+      cmd: |
+        umask 077
+        wg genkey >wg.key
+
+  - name: Generate public server key
+    ansible.builtin.shell:
+      chdir: /root
+      creates: /root/wg.pub
+      cmd: |
+        umask 077
+        wg pubkey <wg.key >wg.pub
+
+  - name: Slurp server private key
+    ansible.builtin.slurp:
+      src: /root/wg.key
+    register: private_key
+
+  - name: Generate wg-quick config
+    ansible.builtin.template:
+      src: wg0.conf.j2
+      dest: /etc/wireguard/wg0.conf
+

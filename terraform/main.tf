@@ -4,7 +4,7 @@ resource "aws_lightsail_key_pair" "wireguard" {
 
 resource "local_sensitive_file" "ssh_private_key" {
   content  = aws_lightsail_key_pair.wireguard.private_key
-  filename = "${path.module}/id_rsa"
+  filename = "${path.module}/../id_rsa"
   file_permission = "0600"
 }
 
@@ -20,7 +20,7 @@ resource "aws_lightsail_instance" "wireguard" {
 }
 
 resource "local_file" "ansible_inventory" {
-  content  = "lightsail ansible_user=admin ansible_host=${aws_lightsail_instance.wireguard.public_ip_address} ansible_ssh_private_key_file=../terraform/id_rsa"
+  content  = "lightsail ansible_user=admin ansible_host=${aws_lightsail_instance.wireguard.public_ip_address} ansible_ssh_private_key_file=../id_rsa"
   filename = "${path.module}/../ansible/hosts"
 }
 
