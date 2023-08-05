@@ -32,6 +32,26 @@
       src: /root/wg.key
     register: private_key
 
+  - name: Generate users private keys
+    with_lines: 
+    - cat ../users.txt
+    ansible.builtin.shell:
+      chdir: /root
+      creates: /root/wg.{{ item }}.key
+      cmd: |
+        umask 077
+        wg genkey >wg.{{ item }}.key
+
+  - name: Generate users public keys
+    with_lines: 
+    - cat ../users.txt
+    ansible.builtin.shell:
+      chdir: /root
+      creates: /root/wg.{{ item }}.pub
+      cmd: |
+        umask 077
+        wg pubkey <wg.{{ item }}.key >wg.{{ item }}.pub
+
   - name: Generate wg-quick config
     ansible.builtin.template:
       src: wg0.conf.j2
