@@ -5,10 +5,11 @@ resource "aws_lightsail_key_pair" "wireguard" {
 resource "local_sensitive_file" "ssh_private_key" {
   content  = aws_lightsail_key_pair.wireguard.private_key
   filename = "${path.module}/id_rsa"
+  file_permission = "0600"
 }
 
 resource "aws_lightsail_instance" "wireguard" {
-  name              = "wireguard"
+  name              = "wireguard_at_home"
   availability_zone = "eu-central-1b"
   blueprint_id      = "debian_11"
   bundle_id         = "nano_2_0"
