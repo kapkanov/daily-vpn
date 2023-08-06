@@ -37,20 +37,27 @@
     - cat ../users.txt
     ansible.builtin.shell:
       chdir: /root
-      creates: /root/wg.{{ item }}.key
+      creates: /root/wg-{{ item }}.key
       cmd: |
         umask 077
-        wg genkey >wg.{{ item }}.key
+        wg genkey >wg-{{ item }}.key
 
   - name: Generate users public keys
     with_lines: 
     - cat ../users.txt
     ansible.builtin.shell:
       chdir: /root
-      creates: /root/wg.{{ item }}.pub
+      creates: /root/wg-{{ item }}.pub
       cmd: |
         umask 077
-        wg pubkey <wg.{{ item }}.key >wg.{{ item }}.pub
+        wg pubkey <wg-{{ item }}.key >wg-{{ item }}.pub
+
+  - name: Slurp user pubkeys
+    with_lines: 
+    - cat ../users.txt
+    ansible.builtin.slurp:
+      src: "/root/wg-{{ item }}.pub"
+    register: users
 
   - name: Generate wg-quick config
     ansible.builtin.template:

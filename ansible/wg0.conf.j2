@@ -5,7 +5,11 @@ PrivateKey = {{ private_key.content | b64decode }}
 PostUp = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o ens5 -j MASQUERADE; ip6tables -A FORWARD -i wg0 -j ACCEPT; ip6tables -t nat -A POSTROUTING -o ens5 -j MASQUERADE # Add forwarding when VPN is started
 PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o ens5 -j MASQUERADE; ip6tables -D FORWARD -i wg0 -j ACCEPT; ip6tables -t nat -D POSTROUTING -o ens5 -j MASQUERADE # Remove forwarding when VPN is shutdown
 
-# [Peer]
-# PublicKey = 
-# AllowedIPs = 10.250.250.2/32
+{% for j in range(users["results"] | length) %}
+{% set user = users["results"][j] %}
+# {{ user["item"] }}
+[Peer]
+PublicKey = {{ user["content"] | b64decode | trim }}
+AllowedIPs = 10.250.250.{{ j }}/32
 
+{% endfor %}
