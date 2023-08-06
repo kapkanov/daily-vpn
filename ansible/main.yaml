@@ -63,9 +63,25 @@
     ansible.builtin.template:
       src: wg0.conf.j2
       dest: /etc/wireguard/wg0.conf
+    notify:
+    - Reload wireguard
+
+  - name: Enable ipv4 forwarding
+    ansible.builtin.shell:
+      chdir: /etc/sysctl.d
+      creates: /etc/sysctl.d/ipv4forwarding.conf
+      cmd: |
+        echo -n "net.ipv4.ip_forward=1" >ipv4forwarding.conf
+        sysctl -p /etc/sysctl.d/ipv4forwarding.conf
 
   - name: Start wireguard service
     ansible.builtin.systemd:
       name: "wg-quick@wg0"
       state: started
       enabled: true
+
+  handlers:
+  - name: Reload wireguard
+    ansible.builtin.service:
+      name: "wg-quick@wg0"
+      state: reloaded
