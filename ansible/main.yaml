@@ -32,6 +32,11 @@
       src: /root/wg.key
     register: private_key
 
+  - name: Slurp server public key
+    ansible.builtin.slurp:
+      src: /root/wg.pub
+    register: server_public_key
+
   - name: Generate users private keys
     with_lines: 
     - cat ../users.txt
@@ -52,12 +57,44 @@
         umask 077
         wg pubkey <wg-{{ item }}.key >wg-{{ item }}.pub
 
+  - name: Copy users public keys locally
+    fetch:
+      src: "/root/wg-{{ item }}.pub"
+      dest: ./userkeys/
+    with_lines: 
+    - cat ../users.txt
+
+  - name: Copy users private keys locally
+    fetch:
+      src: "/root/wg-{{ item }}.key"
+      dest: ./userkeys/
+    with_lines: 
+    - cat ../users.txt
+
+  - name: Generate list with users ips
+    set_fact:
+      user_ips: "{{ user_ips | default({}) | combine({item: index + 2}) }}"
+    with_lines: 
+    - cat ../users.txt
+    loop_control:
+      index_var: index
+
+  - name: debug user ips
+    debug: msg="{{ user_ips }}"
+
   - name: Slurp user pubkeys
     with_lines: 
     - cat ../users.txt
     ansible.builtin.slurp:
       src: "/root/wg-{{ item }}.pub"
     register: users
+
+  - name: Slurp user private keys
+    with_lines: 
+    - cat ../users.txt
+    ansible.builtin.slurp:
+      src: "/root/wg-{{ item }}.key"
+    register: user_private_keys
 
   - name: Generate wg-quick config
     ansible.builtin.template:
@@ -79,6 +116,16 @@
       name: "wg-quick@wg0"
       state: started
       enabled: true
+
+  - name: Print server ip address
+    debug: msg="{{ ansible_host }}"
+
+  - name: Generate user configs
+    ansible.builtin.template:
+      src: user.conf.j2
+      dest: "/root/{{ item }}.conf"
+    with_lines: 
+    - cat ../users.txt
 
   handlers:
   - name: Reload wireguard
