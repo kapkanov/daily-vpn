@@ -6,3 +6,5 @@ tfplan
 id_rsa
 
 hosts
+ansible/userkeys
+ansible/userconfigs

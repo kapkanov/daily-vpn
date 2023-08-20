@@ -79,9 +79,6 @@
     loop_control:
       index_var: index
 
-  - name: debug user ips
-    debug: msg="{{ user_ips }}"
-
   - name: Slurp user pubkeys
     with_lines: 
     - cat ../users.txt
@@ -117,15 +114,21 @@
       state: started
       enabled: true
 
-  - name: Print server ip address
-    debug: msg="{{ ansible_host }}"
+  - name: Create folder for user configs
+    file:
+      path: ./userconfigs
+      state: directory
+    delegate_to: localhost
+    become: false
 
   - name: Generate user configs
     ansible.builtin.template:
       src: user.conf.j2
-      dest: "/root/{{ item }}.conf"
+      dest: "./userconfigs/{{ item }}.conf"
     with_lines: 
     - cat ../users.txt
+    delegate_to: localhost
+    become: false
 
   handlers:
   - name: Reload wireguard
